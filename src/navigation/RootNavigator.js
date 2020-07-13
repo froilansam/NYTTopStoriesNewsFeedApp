@@ -1,50 +1,103 @@
-import React from 'react';
+/* eslint-disable react/no-unused-prop-types */
+import React, { useEffect } from 'react';
+import { Image } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { connect } from 'react-redux';
 
+import { View, Spinner } from 'native-base';
 import PropTypes from 'prop-types';
 
-import SampleModal from '~/modules/auth/modals/SampleModal';
+import layout from '~/constants/layout';
+import { closeLoading as closeLoadingAction } from '~/modules/topstories/topstories.action';
 import utils from '~/utils';
 
-import AuthNavigator from './AuthNavigator';
-import DrawerNavigator from './DrawerNavigator';
+import ArticleScreen from '~/modules/topstories/screens/ArticleScreen';
+import TopStoriesScreen from '~/modules/topstories/screens/TopStoriesScreen';
+
+const loading = require('~/assets/images/loading.png');
 
 const Root = createStackNavigator();
 
-function RootNavigator({ auth }) {
+function RootNavigator({ auth, closeLoading }) {
+	useEffect(() => {
+		closeLoading();
+	}, []);
+
 	return (
-		<Root.Navigator mode="modal">
-			{auth.isLoggedIn ? (
+		<>
+			<Root.Navigator mode="modal">
 				<Root.Screen
-					component={DrawerNavigator}
-					name="Main"
-					options={{ headerShown: false }}
+					component={TopStoriesScreen}
+					name="TOP_STORIES_SCREEN"
+					options={{
+						headerShown: false,
+					}}
 				/>
-			) : (
 				<Root.Screen
-					component={AuthNavigator}
-					name="Auth"
-					options={{ headerShown: false }}
+					component={ArticleScreen}
+					name="ARTICLE_SCREEN"
+					options={{
+						headerShown: false,
+					}}
 				/>
+			</Root.Navigator>
+			{auth.isLoading && (
+				<>
+					<View
+						style={{
+							position: 'absolute',
+							top: 0,
+							left: 0,
+							right: 0,
+							width: layout.window.width,
+							height: layout.window.height,
+							alignItems: 'center',
+							justifyContent: 'center',
+							backgroundColor: 'black',
+							opacity: 0.3,
+						}}
+					/>
+					<View
+						style={{
+							position: 'absolute',
+							top: 0,
+							left: 0,
+							right: 0,
+							width: layout.window.width,
+							height: layout.window.height,
+							alignItems: 'center',
+							justifyContent: 'center',
+						}}
+					>
+						<Image
+							source={loading}
+							style={{ width: 62, height: 80 }}
+						/>
+						<Spinner color="black" />
+					</View>
+				</>
 			)}
-			<Root.Screen
-				component={SampleModal}
-				name="SAMPLE"
-				options={{ headerTitle: 'Sample' }}
-			/>
-		</Root.Navigator>
+		</>
 	);
 }
 
 RootNavigator.propTypes = {
 	auth: PropTypes.shape({
 		isLoggedIn: PropTypes.bool,
+		isLoading: PropTypes.bool,
 	}).isRequired,
+	closeLoading: PropTypes.func.isRequired,
+	focused: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = ({ auth }) => ({
 	auth,
 });
 
-export default utils.compose(connect(mapStateToProps))(RootNavigator);
+const mapDispatchToProps = {
+	closeLoading: closeLoadingAction,
+};
+
+export default utils.compose(connect(mapStateToProps, mapDispatchToProps))(
+	RootNavigator,
+);

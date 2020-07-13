@@ -14,6 +14,9 @@ import useLinking from './navigation/useLinking';
 const roboto = require('native-base/Fonts/Roboto.ttf');
 const robotoMedium = require('native-base/Fonts/Roboto_medium.ttf');
 const spaceMono = require('./assets/fonts/SpaceMono-Regular.ttf');
+const imperial = require('./assets/fonts/imperial.ttf');
+const cheltenham = require('./assets/fonts/cheltenham-bold3.ttf');
+const chomsky = require('./assets/fonts/Chomsky.otf');
 
 const styles = StyleSheet.create({
 	container: {
@@ -47,6 +50,9 @@ function Main(props) {
 					Roboto_medium: robotoMedium,
 					...Ionicons.font,
 					'space-mono': spaceMono,
+					Chomsky: chomsky,
+					Cheltenham: cheltenham,
+					Imperial: imperial,
 				});
 			} catch (e) {
 				// We might want to provide this error information to an error reporting service
@@ -65,6 +71,7 @@ function Main(props) {
 	return (
 		<View style={styles.container}>
 			{Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+			<StatusBar />
 			<NavigationContainer
 				ref={containerRef}
 				initialState={initialNavigationState}

@@ -1,5 +1,7 @@
 export default {
 	auth: {
-		isLoggedIn: false,
+		isLoading: false,
+		selectedSection: 'home',
+		offlineArticles: [],
 	},
 };
