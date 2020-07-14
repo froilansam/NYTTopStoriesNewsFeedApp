@@ -13,6 +13,20 @@ The app displays an article list and allows the user to open an article.
 - As this app will be used in remote areas it is important that the app is resilient to an
   unreliable network connection, i.e. offline capability.
 
+## Features
+
+- Top Story Sections
+- Filter by Location and Description Keywords
+- Open the Article URL
+- Save Article Offline
+
+![Image of Splash Screen](https://z-p3-scontent.fmnl4-6.fna.fbcdn.net/v/t1.15752-9/107158025_3584026038292872_6836950695194561672_n.png?_nc_cat=107&_nc_sid=b96e70&_nc_eui2=AeFy67HgPYf7pqVwguKnUVw0gqY9NfsGPeeCpj01-wY9544sQW-WkhO4-h9mj6EIui8&_nc_ohc=n9EICf19UK8AX_3CdXF&_nc_ht=z-p3-scontent.fmnl4-6.fna&oh=0c7140df5cac7eeb1f7094ba2db46c6f&oe=5F345901)
+![Image of Top Stories](https://z-p3-scontent.fmnl4-1.fna.fbcdn.net/v/t1.15752-9/108035761_308336260296776_4697131958473476428_n.png?_nc_cat=104&_nc_sid=b96e70&_nc_eui2=AeF9MkAdzAFoUBCJtmz5p5kKDBs52haaUhcMGznaFppSF0LCjcZ22M3idMfMAtSkOlw&_nc_ohc=iocAVdSGvdEAX-LW29T&_nc_ht=z-p3-scontent.fmnl4-1.fna&oh=58f4fc73ee4004d682745e0dc15146ed&oe=5F342827)
+![Image of Articles](https://z-p3-scontent.fmnl4-6.fna.fbcdn.net/v/t1.15752-9/107848189_572663783411339_3922754423984798708_n.png?_nc_cat=107&_nc_sid=b96e70&_nc_eui2=AeE38Kztl1tlAkwOeaojO0-ZPe_r2hu54j097-vaG7niPRJqac3mLNGh550tMaWFYfo&_nc_ohc=L4QCOm0UOykAX9kaUs_&_nc_ht=z-p3-scontent.fmnl4-6.fna&oh=76f00b5784daa754a6a73525258f62dc&oe=5F350BFE)
+![Image of Offline Library](https://z-p3-scontent.fmnl4-4.fna.fbcdn.net/v/t1.15752-9/107868983_1172178203148577_4436889195094067977_n.png?_nc_cat=100&_nc_sid=b96e70&_nc_eui2=AeGJCXIwN-3lnH6MljZctbXrzzraLWZhp0zPOtotZmGnTGQ6sr5Eme8nkyYG0WC-G1I&_nc_ohc=kKAHqs5hB5IAX89_c6N&_nc_ht=z-p3-scontent.fmnl4-4.fna&oh=ad802917d1ee153dbbd0d5a59dfff830&oe=5F33171F)
+![Image of Offline Library](https://z-p3-scontent.fmnl4-6.fna.fbcdn.net/v/t1.15752-9/107594107_559261411417052_1881391026547689059_n.png?_nc_cat=107&_nc_sid=b96e70&_nc_eui2=AeHUd0Dt8e0SCPTQug4dnMzJ34F65Rg8yrHfgXrlGDzKsalOZU7fyFC_g2k4JNTq068&_nc_ohc=nHZGbUkjWIcAX_RbN0m&_nc_ht=z-p3-scontent.fmnl4-6.fna&oh=a2665f06df49adf9aa711ff60457e170&oe=5F334511)
+
+
 ## Environment Setup
 
 - [Node 12.x](https://nodejs.org/en/) (use [NVM](https://github.com/nvm-sh/nvm))

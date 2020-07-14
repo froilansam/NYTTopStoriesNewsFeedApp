@@ -6,6 +6,7 @@ import * as React from 'react';
 import { Platform, StatusBar, StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 
+import { Root } from 'native-base';
 import PropTypes from 'prop-types';
 
 import RootNavigator from './navigation/RootNavigator';
@@ -69,16 +70,18 @@ function Main(props) {
 		return null;
 	}
 	return (
-		<View style={styles.container}>
-			{Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-			<StatusBar />
-			<NavigationContainer
-				ref={containerRef}
-				initialState={initialNavigationState}
-			>
-				<RootNavigator />
-			</NavigationContainer>
-		</View>
+		<Root>
+			<View style={styles.container}>
+				{Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+				<StatusBar />
+				<NavigationContainer
+					ref={containerRef}
+					initialState={initialNavigationState}
+				>
+					<RootNavigator />
+				</NavigationContainer>
+			</View>
+		</Root>
 	);
 }
 
