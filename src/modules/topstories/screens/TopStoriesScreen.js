@@ -63,7 +63,9 @@ const TopStoriesScreen = ({
 
 	useEffect(() => {
 		openLoading();
+	}, []);
 
+	useEffect(() => {
 		const unsubscribe = NetInfo.addEventListener((state) => {
 			setIsConnected(state.isConnected);
 
@@ -72,8 +74,8 @@ const TopStoriesScreen = ({
 			return show('You are online.');
 		});
 
-		return unsubscribe();
-	}, []);
+		return unsubscribe;
+	});
 
 	useEffect(() => {
 		getArticles(_.get(auth, 'selectedSection', null))
