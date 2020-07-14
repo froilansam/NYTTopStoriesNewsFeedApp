@@ -75,7 +75,7 @@ const TopStoriesScreen = ({
 		});
 
 		return unsubscribe;
-	});
+	}, []);
 
 	useEffect(() => {
 		getArticles(_.get(auth, 'selectedSection', null))
