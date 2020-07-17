@@ -4,9 +4,12 @@ import { connect } from 'react-redux';
 
 import _ from 'lodash';
 import moment from 'moment';
-import PropTypes from 'prop-types';
 import { Icon } from 'native-base';
+import PropTypes from 'prop-types';
+
 import utils from '~/utils';
+
+import { isArticleDownloaded } from '../topstories.library';
 
 const SucceedingArticle = ({
 	auth,
@@ -17,15 +20,21 @@ const SucceedingArticle = ({
 }) => {
 	if (index !== 0) {
 		const offlineArticles = _.get(auth, 'offlineArticles', []);
-		const isDownloaded = offlineArticles.find((articleInfo) => {
-			return articleInfo.url === article.url;
-		});
+		const isDownloaded = isArticleDownloaded(offlineArticles, article);
+		const articleURL = _.get(article, 'url', null);
+		const multimediaURL = _.get(article, 'multimedia[0].url', null);
+		const byLine = _.get(article, 'byline', null);
+		const title = _.get(article, 'title', null);
+		const abstract = _.get(article, 'abstract', null);
+		const publishedDate = moment(
+			_.get(article, 'published_date', null),
+		).fromNow();
 
 		return (
 			<TouchableOpacity
 				onPress={() => {
 					return navigation.navigate('ARTICLE_SCREEN', {
-						article_url: _.get(article, 'url', null),
+						article_url: articleURL,
 					});
 				}}
 			>
@@ -48,7 +57,7 @@ const SucceedingArticle = ({
 								width: '70%',
 							}}
 						>
-							{!!_.get(article, 'byline', null) && (
+							{!!byLine && (
 								<View>
 									<Text
 										style={{
@@ -58,8 +67,8 @@ const SucceedingArticle = ({
 											marginTop: 10,
 										}}
 									>
-										{_.get(article, 'byline', null)
-											.split('By ')[1]
+										{byLine
+											.replace('By ', '')
 											.toUpperCase()}
 									</Text>
 								</View>
@@ -73,7 +82,7 @@ const SucceedingArticle = ({
 										marginBottom: 5,
 									}}
 								>
-									{_.get(article, 'title', null)}
+									{title}
 								</Text>
 							</View>
 							<View>
@@ -86,7 +95,7 @@ const SucceedingArticle = ({
 										marginTop: 5,
 									}}
 								>
-									{_.get(article, 'abstract', null)}
+									{abstract}
 								</Text>
 							</View>
 						</View>
@@ -99,11 +108,7 @@ const SucceedingArticle = ({
 						>
 							<Image
 								source={{
-									uri: _.get(
-										article,
-										'multimedia[0].url',
-										null,
-									),
+									uri: multimediaURL,
 								}}
 								style={{
 									width: 80,
@@ -129,9 +134,7 @@ const SucceedingArticle = ({
 								alignSelf: 'flex-start',
 							}}
 						>
-							{moment(
-								_.get(article, 'published_date', null),
-							).fromNow()}
+							{publishedDate}
 						</Text>
 						<View
 							style={{

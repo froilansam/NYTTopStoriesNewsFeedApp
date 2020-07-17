@@ -1,6 +1,15 @@
 /* eslint-disable react/forbid-prop-types */
-import React from 'react';
-import { ScrollView, Animated, FlatList, View, Text } from 'react-native';
+
+import React, { useEffect, useState } from 'react';
+import {
+	ScrollView,
+	Animated,
+	FlatList,
+	View,
+	Text,
+	RefreshControl,
+	Image,
+} from 'react-native';
 import { connect } from 'react-redux';
 
 import _ from 'lodash';
@@ -14,6 +23,9 @@ import {
 	closeLoading as closeLoadingAction,
 	openLoading as openLoadingAction,
 	getArticles as getArticlesAction,
+	deleteArticle as deleteArticleAction,
+	saveArticle as saveArticleAction,
+	selectSection as selectSectionAction,
 } from '../topstories.action';
 
 import FirstArticle from './FirstArticle';
@@ -23,30 +35,35 @@ import {
 } from '~/modules/notification/notification.library';
 import SectionButton from './SectionButton';
 import SucceedingArticle from './SucceedingArticle';
-import layout from '~/constants/layout';
+import {
+	handleSaveUnsaveArticle,
+	addIdToArticles,
+	getGeoInfos,
+	getDesInfo,
+} from '../topstories.library';
+
+import style from './OnlineScreen.style';
 
 const OnlineScreen = ({
-	articles,
 	auth,
 	closeLoading,
+	deleteArticle,
 	getArticles,
-	handleSaveUnsaveArticle,
-	handleSection,
 	isConnected,
-	keywords,
-	locations,
 	navigation,
 	openLoading,
-	selectedKeywords,
-	selectedLocations,
-	setArticles,
-	setKeywords,
-	setLocations,
-	setSelectedKeywords,
-	setSelectedLocations,
+	saveArticle,
+	selectSection,
 }) => {
-	let renderArticles = [...articles];
+	const [articles, setArticles] = useState([]);
+	const [selectedKeywords, setSelectedKeywords] = useState(null);
+	const [keywords, setKeywords] = useState([]);
+	const [selectedLocations, setSelectedLocations] = useState(null);
+	const [locations, setLocations] = useState([]);
+	const offlineArticles = _.get(auth, 'offlineArticles', []);
 	const scrollYAnimatedValue = new Animated.Value(0);
+	let renderArticles = [...articles];
+
 	const diffClamp = Animated.diffClamp(
 		scrollYAnimatedValue,
 		0,
@@ -58,98 +75,73 @@ const OnlineScreen = ({
 		outputRange: [0, isConnected ? -160 : -80],
 	});
 
-	const refresh = () => {
-		openLoading();
-		getArticles(_.get(auth, 'selectedSection', null))
-			.then((data) => {
-				closeLoading();
+	const cacheImages = (articlesInfo) => {
+		return articlesInfo.reduce((acc, articleInfo) => {
+			if (_.get(articleInfo, 'multimedia[0].url'))
+				return acc.concat(
+					Image.prefetch(_.get(articleInfo, 'multimedia[0].url')),
+				);
+			return acc;
+		}, []);
+	};
 
-				const articlesInfo = data.data.results.map((art, index) => {
-					return {
-						...art,
-						id: index,
-					};
-				});
-				const locationsChoices = articlesInfo.reduce((acc, art) => {
-					const geo = _.get(art, 'geo_facet', []).sort((a, b) => {
-						if (a < b) {
-							return -1;
-						}
-						if (a > b) {
-							return 1;
-						}
-						return 0;
-					});
-					const accumulator = [...acc];
-					if (geo.length > 0) {
-						const geoMapped = geo.reduce(
-							(accu, geoInfo) => {
-								const included = accu.find(
-									(single) => single.geoInfo === geoInfo,
-								);
+	const retrieveArticles = (type = null) => {
+		const selectedSection = _.get(auth, 'selectedSection', null);
+		getArticles(selectedSection)
+			.then(async (data) => {
+				const articlesInfo = addIdToArticles(data);
+				const images = cacheImages(articlesInfo);
 
-								if (!included) {
-									return accu.concat({
-										id: accu.length + 1,
-										geoInfo,
-									});
-								}
-								return accu;
-							},
-							[...accumulator],
-						);
-
-						return geoMapped;
-					}
-					return accumulator;
-				}, []);
-
-				const keywordsChoices = articlesInfo.reduce((acc, art) => {
-					const des = _.get(art, 'des_facet', []).sort((a, b) => {
-						if (a < b) {
-							return -1;
-						}
-						if (a > b) {
-							return 1;
-						}
-						return 0;
-					});
-
-					const accumulator = [...acc];
-					if (des.length > 0) {
-						const desMapped = des.reduce(
-							(accu, desInfo) => {
-								const included = accu.find(
-									(single) => single.desInfo === desInfo,
-								);
-
-								if (!included) {
-									return accu.concat({
-										id: accu.length + 1,
-										desInfo,
-									});
-								}
-								return accu;
-							},
-							[...accumulator],
-						);
-
-						return desMapped;
-					}
-					return accumulator;
-				}, []);
+				const locationsChoices = getGeoInfos(articlesInfo);
+				const keywordsChoices = getDesInfo(articlesInfo);
 
 				setLocations(locationsChoices);
 				setKeywords(keywordsChoices);
 				setArticles(articlesInfo);
 
-				show('Section has been refreshed.');
+				await Promise.all([...images]);
+				closeLoading();
+				if (type === 'refresh') show('Section has been refreshed.');
 			})
 			.catch((err) => {
 				closeLoading();
 				defaultErrorHandler(null, err);
 			});
 	};
+
+	const handleSaveUnsaveArticleHandler = (article) => {
+		const isDownloaded = offlineArticles.find((articleInfo) => {
+			return articleInfo.url === article.url;
+		});
+
+		handleSaveUnsaveArticle(
+			article,
+			deleteArticle,
+			isDownloaded,
+			offlineArticles,
+			saveArticle,
+		);
+	};
+
+	const handleSection = (section) => {
+		openLoading();
+		selectSection(section);
+		setSelectedKeywords(null);
+		setSelectedLocations(null);
+	};
+
+	const refresh = () => {
+		openLoading();
+		retrieveArticles('refresh');
+	};
+
+	useEffect(() => {
+		openLoading();
+	}, []);
+
+	useEffect(() => {
+		retrieveArticles();
+	}, [auth.selectedSection]);
 
 	if (selectedLocations || selectedKeywords) {
 		renderArticles = articles.reduce((acc, art) => {
@@ -175,6 +167,14 @@ const OnlineScreen = ({
 						},
 					},
 				])}
+				refreshControl={
+					// eslint-disable-next-line react/jsx-wrap-multilines
+					<RefreshControl
+						onRefresh={refresh}
+						progressViewOffset={160}
+						refreshing={false}
+					/>
+				}
 				scrollEventThrottle={16}
 			>
 				{renderArticles.length > 0 &&
@@ -183,9 +183,9 @@ const OnlineScreen = ({
 							return (
 								<FirstArticle
 									article={article}
-									handleSaveUnsaveArticle={
-										handleSaveUnsaveArticle
-									}
+									handleSaveUnsaveArticle={() => {
+										handleSaveUnsaveArticleHandler(article);
+									}}
 									navigation={navigation}
 								/>
 							);
@@ -195,62 +195,29 @@ const OnlineScreen = ({
 				<FlatList
 					data={renderArticles}
 					keyExtractor={(item) => item.id}
-					renderItem={({ index, item }) => (
+					renderItem={({ index, item: article }) => (
 						<SucceedingArticle
-							handleSaveUnsaveArticle={handleSaveUnsaveArticle}
+							handleSaveUnsaveArticle={() => {
+								handleSaveUnsaveArticleHandler(article);
+							}}
 							index={index}
-							item={item}
+							item={article}
 							navigation={navigation}
 						/>
 					)}
 				/>
 			</ScrollView>
 			<Animated.View
-				style={{
-					transform: [{ translateY: headerAnimation }],
-					zIndex: 200,
-					position: 'absolute',
-					top: 0,
-					left: 0,
-					right: 0,
-					justifyContent: 'center',
-					alignItems: 'center',
-					elevation: 4,
-					height: 160,
-					backgroundColor: '#fff',
-				}}
+				style={[
+					{
+						transform: [{ translateY: headerAnimation }],
+					},
+					style.onlineHeader,
+				]}
 			>
-				<Text
-					style={{
-						marginTop: 15,
-						alignSelf: 'center',
-						fontFamily: 'Chomsky',
-						fontSize: 25,
-					}}
-				>
-					The New York Times
-				</Text>
+				<Text style={style.onlineHeaderTitle}>The New York Times</Text>
 
-				<Icon
-					name="reload"
-					onPress={() => refresh()}
-					style={{
-						position: 'absolute',
-						right: 10,
-						top: 20,
-					}}
-					type="MaterialCommunityIcons"
-				/>
-
-				<View
-					style={{
-						height: 4,
-						borderTopColor: '#8e8e8e',
-						borderTopWidth: 0.6,
-						width: '70%',
-						marginTop: 10,
-					}}
-				/>
+				<View style={style.onlineLineStyle} />
 				<ScrollView horizontal>
 					{sections.map((section, index) => {
 						if (index % 2 === 0) {
@@ -267,18 +234,7 @@ const OnlineScreen = ({
 					})}
 				</ScrollView>
 			</Animated.View>
-			<View
-				style={{
-					position: 'absolute',
-					bottom: 0,
-					height: 100,
-					flexDirection: 'row',
-					alignItems: 'center',
-					justifyContent: 'space-evenly',
-					zIndex: 0,
-					width: layout.window.width,
-				}}
-			>
+			<View style={style.onlineFilterView}>
 				<Button
 					onPress={() => {
 						ActionSheet.show(
@@ -298,6 +254,13 @@ const OnlineScreen = ({
 								);
 
 								setSelectedKeywords(selected.desInfo);
+								if (selectedLocations)
+									return show(
+										`Showing article/s about ${selectedLocations} or ${selected.desInfo}.`,
+									);
+								return show(
+									`Showing article/s about ${selected.desInfo}.`,
+								);
 							},
 						);
 					}}
@@ -353,6 +316,14 @@ const OnlineScreen = ({
 								);
 
 								setSelectedLocations(selected.geoInfo);
+
+								if (selectedKeywords)
+									return show(
+										`Showing article/s about ${selected.geoInfo} or ${selectedKeywords}.`,
+									);
+								return show(
+									`Showing article/s about ${selected.geoInfo}.`,
+								);
 							},
 						);
 					}}
@@ -392,37 +363,26 @@ const OnlineScreen = ({
 };
 
 OnlineScreen.propTypes = {
-	articles: PropTypes.array.isRequired,
 	auth: PropTypes.shape().isRequired,
 	closeLoading: PropTypes.func.isRequired,
+	deleteArticle: PropTypes.func.isRequired,
 	getArticles: PropTypes.func.isRequired,
-	handleSaveUnsaveArticle: PropTypes.func.isRequired,
-	handleSection: PropTypes.func.isRequired,
 	isConnected: PropTypes.bool.isRequired,
-	keywords: PropTypes.array.isRequired,
-	locations: PropTypes.array.isRequired,
 	navigation: PropTypes.shape({}).isRequired,
 	openLoading: PropTypes.func.isRequired,
-	selectedKeywords: PropTypes.string,
-	selectedLocations: PropTypes.string,
-	setArticles: PropTypes.func.isRequired,
-	setKeywords: PropTypes.func.isRequired,
-	setLocations: PropTypes.func.isRequired,
-	setSelectedKeywords: PropTypes.func.isRequired,
-	setSelectedLocations: PropTypes.func.isRequired,
-};
-
-OnlineScreen.defaultProps = {
-	selectedKeywords: null,
-	selectedLocations: null,
+	saveArticle: PropTypes.func.isRequired,
+	selectSection: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = ({ auth }) => ({ auth });
 
 const mapDispatchToProps = {
 	closeLoading: closeLoadingAction,
+	deleteArticle: deleteArticleAction,
 	getArticles: getArticlesAction,
 	openLoading: openLoadingAction,
+	saveArticle: saveArticleAction,
+	selectSection: selectSectionAction,
 };
 
 export default utils.compose(connect(mapStateToProps, mapDispatchToProps))(

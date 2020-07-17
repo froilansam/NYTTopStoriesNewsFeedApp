@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, View, Image, Text } from 'react-native';
+import { TouchableOpacity, View, Text, Image } from 'react-native';
 import { connect } from 'react-redux';
 
 import _ from 'lodash';
@@ -7,8 +7,10 @@ import moment from 'moment';
 import { Icon } from 'native-base';
 import PropTypes from 'prop-types';
 
-import utils from '~/utils';
 import layout from '~/constants/layout';
+import utils from '~/utils';
+
+import { isArticleDownloaded } from '../topstories.library';
 
 const FirstArticle = ({
 	article,
@@ -17,15 +19,21 @@ const FirstArticle = ({
 	navigation,
 }) => {
 	const offlineArticles = _.get(auth, 'offlineArticles', []);
-	const isDownloaded = offlineArticles.find((articleInfo) => {
-		return articleInfo.url === article.url;
-	});
+	const isDownloaded = isArticleDownloaded(offlineArticles, article);
+	const articleURL = _.get(article, 'url', null);
+	const multimediaURL = _.get(article, 'multimedia[0].url', null);
+	const byLine = _.get(article, 'byline', null);
+	const title = _.get(article, 'title', null);
+	const abstract = _.get(article, 'abstract', null);
+	const publishedDate = moment(
+		_.get(article, 'published_date', null),
+	).fromNow();
 
 	return (
 		<TouchableOpacity
 			onPress={() => {
 				return navigation.navigate('ARTICLE_SCREEN', {
-					article_url: _.get(article, 'url', null),
+					article_url: articleURL,
 				});
 			}}
 		>
@@ -33,7 +41,7 @@ const FirstArticle = ({
 				<View>
 					<Image
 						source={{
-							uri: _.get(article, 'multimedia[0].url', null),
+							uri: multimediaURL,
 						}}
 						style={{
 							width: layout.window.width,
@@ -41,7 +49,7 @@ const FirstArticle = ({
 						}}
 					/>
 				</View>
-				{!!_.get(article, 'byline', null) && (
+				{!!byLine && (
 					<>
 						<View>
 							<Text
@@ -52,9 +60,7 @@ const FirstArticle = ({
 									marginTop: 10,
 								}}
 							>
-								{_.get(article, 'byline', null)
-									.split('By ')[1]
-									.toUpperCase()}
+								{byLine.replace('By ', '').toUpperCase()}
 							</Text>
 						</View>
 					</>
@@ -68,7 +74,7 @@ const FirstArticle = ({
 							marginBottom: 10,
 						}}
 					>
-						{_.get(article, 'title', null)}
+						{title}
 					</Text>
 				</View>
 
@@ -81,7 +87,7 @@ const FirstArticle = ({
 							margin: 10,
 						}}
 					>
-						{_.get(article, 'abstract', null)}
+						{abstract}
 					</Text>
 				</View>
 				<View
@@ -101,9 +107,7 @@ const FirstArticle = ({
 							alignSelf: 'flex-start',
 						}}
 					>
-						{moment(
-							_.get(article, 'published_date', null),
-						).fromNow()}
+						{publishedDate}
 					</Text>
 					<View
 						style={{

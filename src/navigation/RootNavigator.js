@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unused-prop-types */
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Image } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { connect } from 'react-redux';
@@ -8,7 +8,6 @@ import { View, Spinner } from 'native-base';
 import PropTypes from 'prop-types';
 
 import layout from '~/constants/layout';
-import { closeLoading as closeLoadingAction } from '~/modules/topstories/topstories.action';
 import utils from '~/utils';
 
 import ArticleScreen from '~/modules/topstories/screens/ArticleScreen';
@@ -18,11 +17,7 @@ const loading = require('~/assets/images/loading.png');
 
 const Root = createStackNavigator();
 
-function RootNavigator({ auth, closeLoading }) {
-	useEffect(() => {
-		closeLoading();
-	}, []);
-
+function RootNavigator({ auth }) {
 	return (
 		<>
 			<Root.Navigator mode="modal">
@@ -86,7 +81,6 @@ RootNavigator.propTypes = {
 		isLoggedIn: PropTypes.bool,
 		isLoading: PropTypes.bool,
 	}).isRequired,
-	closeLoading: PropTypes.func.isRequired,
 	focused: PropTypes.bool.isRequired,
 };
 
@@ -94,10 +88,4 @@ const mapStateToProps = ({ auth }) => ({
 	auth,
 });
 
-const mapDispatchToProps = {
-	closeLoading: closeLoadingAction,
-};
-
-export default utils.compose(connect(mapStateToProps, mapDispatchToProps))(
-	RootNavigator,
-);
+export default utils.compose(connect(mapStateToProps))(RootNavigator);

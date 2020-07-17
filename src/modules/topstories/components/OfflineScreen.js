@@ -12,20 +12,30 @@ import { connect } from 'react-redux';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 
-import layout from '~/constants/layout';
 import utils from '~/utils';
+
+import {
+	saveArticle as saveArticleAction,
+	deleteArticle as deleteArticleAction,
+} from '../topstories.action';
+import { handleSaveUnsaveArticle } from '../topstories.library';
+
 import FirstArticle from './FirstArticle';
+import style from './OfflineScreen.style';
 import SucceedingArticle from './SucceedingArticle';
 
 const loading = require('~/assets/images/loading.png');
 
 const OfflineScreen = ({
 	auth,
-	handleSaveUnsaveArticle,
+	deleteArticle,
 	isConnected,
 	navigation,
+	saveArticle,
 }) => {
+	const offlineArticles = _.get(auth, 'offlineArticles', []);
 	const scrollYAnimatedValue = new Animated.Value(0);
+
 	const diffClamp = Animated.diffClamp(
 		scrollYAnimatedValue,
 		0,
@@ -37,35 +47,26 @@ const OfflineScreen = ({
 		outputRange: [0, isConnected ? -160 : -80],
 	});
 
+	const handleSaveUnsaveArticleHandler = (article) => {
+		const isDownloaded = offlineArticles.find((articleInfo) => {
+			return articleInfo.url === article.url;
+		});
+
+		handleSaveUnsaveArticle(
+			article,
+			deleteArticle,
+			isDownloaded,
+			offlineArticles,
+			saveArticle,
+		);
+	};
+
 	return (
 		<>
-			{_.get(auth, 'offlineArticles', []).length <= 0 && (
-				<View
-					style={{
-						height: layout.window.height,
-						width: layout.window.width,
-						justifyContent: 'center',
-						alignItems: 'center',
-					}}
-				>
-					<Image
-						source={loading}
-						style={{
-							width: 62,
-							height: 80,
-							marginBottom: 10,
-						}}
-					/>
-					<Text
-						style={{
-							marginTop: 0,
-							alignSelf: 'center',
-							fontFamily: 'Chomsky',
-							fontSize: 15,
-						}}
-					>
-						No offline articles
-					</Text>
+			{offlineArticles.length <= 0 && (
+				<View style={style.offlineView}>
+					<Image source={loading} style={style.offlineLogo} />
+					<Text style={style.offlineText}>No offline articles</Text>
 				</View>
 			)}
 			<ScrollView
@@ -80,15 +81,17 @@ const OfflineScreen = ({
 				])}
 				scrollEventThrottle={16}
 			>
-				{_.get(auth, 'offlineArticles', []).length > 0 &&
-					_.get(auth, 'offlineArticles', []).map((article, index) => {
+				{offlineArticles.length > 0 &&
+					offlineArticles.map((article, index) => {
 						if (index === 0)
 							return (
 								<FirstArticle
 									article={article}
-									handleSaveUnsaveArticle={
-										handleSaveUnsaveArticle
-									}
+									handleSaveUnsaveArticle={() => {
+										return handleSaveUnsaveArticleHandler(
+											article,
+										);
+									}}
 									navigation={navigation}
 								/>
 							);
@@ -96,53 +99,30 @@ const OfflineScreen = ({
 					})}
 
 				<FlatList
-					data={_.get(auth, 'offlineArticles', [])}
+					data={offlineArticles}
 					keyExtractor={(item) => item.id}
-					renderItem={({ index, item }) => (
+					renderItem={({ index, item: article }) => (
 						<SucceedingArticle
-							handleSaveUnsaveArticle={handleSaveUnsaveArticle}
+							handleSaveUnsaveArticle={() => {
+								return handleSaveUnsaveArticleHandler(article);
+							}}
 							index={index}
-							item={item}
+							item={article}
 							navigation={navigation}
 						/>
 					)}
 				/>
 			</ScrollView>
 			<Animated.View
-				style={{
-					transform: [{ translateY: headerAnimation }],
-					zIndex: 200,
-					position: 'absolute',
-					top: 0,
-					left: 0,
-					right: 0,
-					justifyContent: 'center',
-					alignItems: 'center',
-					elevation: 4,
-					height: 80,
-					backgroundColor: '#fff',
-				}}
+				style={[
+					{
+						transform: [{ translateY: headerAnimation }],
+					},
+					style.offlineHeader,
+				]}
 			>
-				<Text
-					style={{
-						marginTop: 0,
-						alignSelf: 'center',
-						fontFamily: 'Chomsky',
-						fontSize: 25,
-					}}
-				>
-					The New York Times
-				</Text>
-				<Text
-					style={{
-						marginTop: 0,
-						alignSelf: 'center',
-						fontSize: 12,
-						fontFamily: 'Imperial',
-					}}
-				>
-					Offline
-				</Text>
+				<Text style={style.offlineHeaderTitle}>The New York Times</Text>
+				<Text style={style.offlineHeaderSubtext}>Offline</Text>
 			</Animated.View>
 		</>
 	);
@@ -150,11 +130,19 @@ const OfflineScreen = ({
 
 OfflineScreen.propTypes = {
 	auth: PropTypes.shape().isRequired,
-	handleSaveUnsaveArticle: PropTypes.func.isRequired,
+	deleteArticle: PropTypes.func.isRequired,
 	isConnected: PropTypes.bool.isRequired,
 	navigation: PropTypes.shape({}).isRequired,
+	saveArticle: PropTypes.func.isRequired,
+};
+
+const mapDispatchToProps = {
+	deleteArticle: deleteArticleAction,
+	saveArticle: saveArticleAction,
 };
 
 const mapStateToProps = ({ auth }) => ({ auth });
 
-export default utils.compose(connect(mapStateToProps))(OfflineScreen);
+export default utils.compose(connect(mapStateToProps, mapDispatchToProps))(
+	OfflineScreen,
+);

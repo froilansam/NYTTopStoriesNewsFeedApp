@@ -8,11 +8,15 @@ import PropTypes from 'prop-types';
 import utils from '~/utils';
 
 const SectionButton = ({ auth, bottom, handleSection, top }) => {
+	const selectedSection = _.get(auth, 'selectedSection', null);
+	const topValue = _.get(top, 'value', null);
+	const topLabel = _.get(top, 'label', null);
+	const bottomValue = _.get(bottom, 'value', null);
+	const bottomLabel = _.get(bottom, 'label', null);
+
 	return (
 		<View>
-			<TouchableOpacity
-				onPress={() => handleSection(_.get(top, 'value', null))}
-			>
+			<TouchableOpacity onPress={() => handleSection(topValue)}>
 				<View
 					style={{
 						borderColor: 'black',
@@ -25,10 +29,7 @@ const SectionButton = ({ auth, bottom, handleSection, top }) => {
 						marginTop: 10,
 						marginHorizontal: 2,
 						backgroundColor:
-							_.get(auth, 'selectedSection', null) ===
-							_.get(top, 'value', null)
-								? 'black'
-								: '#fff',
+							selectedSection === topValue ? 'black' : '#fff',
 					}}
 				>
 					<Text
@@ -36,20 +37,15 @@ const SectionButton = ({ auth, bottom, handleSection, top }) => {
 							fontFamily: 'Imperial',
 							fontSize: 17,
 							color:
-								_.get(auth, 'selectedSection', null) ===
-								_.get(top, 'value', null)
-									? '#fff'
-									: 'black',
+								selectedSection === topValue ? '#fff' : 'black',
 						}}
 					>
-						{_.get(top, 'label', null)}
+						{topLabel}
 					</Text>
 				</View>
 			</TouchableOpacity>
-			{!!_.get(bottom, 'value', null) && (
-				<TouchableOpacity
-					onPress={() => handleSection(_.get(bottom, 'value', null))}
-				>
+			{!!bottomValue && (
+				<TouchableOpacity onPress={() => handleSection(bottomValue)}>
 					<View
 						style={{
 							borderColor: 'black',
@@ -62,8 +58,7 @@ const SectionButton = ({ auth, bottom, handleSection, top }) => {
 							marginTop: 10,
 							marginHorizontal: 2,
 							backgroundColor:
-								_.get(auth, 'selectedSection', null) ===
-								_.get(bottom, 'value', null)
+								selectedSection === bottomValue
 									? 'black'
 									: '#fff',
 						}}
@@ -73,13 +68,12 @@ const SectionButton = ({ auth, bottom, handleSection, top }) => {
 								fontFamily: 'Imperial',
 								fontSize: 17,
 								color:
-									_.get(auth, 'selectedSection', null) ===
-									_.get(bottom, 'value', null)
+									selectedSection === bottomValue
 										? '#fff'
 										: 'black',
 							}}
 						>
-							{_.get(bottom, 'label', null)}
+							{bottomLabel}
 						</Text>
 					</View>
 				</TouchableOpacity>
