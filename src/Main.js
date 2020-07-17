@@ -69,6 +69,7 @@ function Main(props) {
 	if (!isLoadingComplete && !skipLoadingScreen) {
 		return null;
 	}
+
 	return (
 		<Root>
 			<View style={styles.container}>
