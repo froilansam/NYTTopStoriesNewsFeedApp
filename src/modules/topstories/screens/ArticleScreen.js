@@ -13,49 +13,29 @@ import {
 	closeLoading as closeLoadingAction,
 	openLoading as openLoadingAction,
 } from '../topstories.action';
-import layout from '~/constants/layout';
+import style from './ArticleScreen.style';
 
 const loading = require('~/assets/images/loading.png');
 
 const ArticleScreen = ({ navigation, route }) => {
+	/**
+	 * Webview for online articles when the user click the card.
+	 */
 	return (
 		<>
 			<WebView
 				cacheEnabled
 				cacheMode="LOAD_CACHE_ELSE_NETWORK"
+				/**
+				 * This will be shown if the article has not been cached and the network goes offline.
+				 */
 				renderError={() => (
-					<View
-						style={{
-							height: layout.window.height,
-							width: layout.window.width,
-							justifyContent: 'center',
-							alignItems: 'center',
-							position: 'absolute',
-							top: 0,
-							left: 0,
-							right: 0,
-							zIndex: 100,
-							backgroundColor: '#fff',
-						}}
-					>
+					<View style={style.asWebViewErrorView}>
 						<Image
 							source={loading}
-							style={{
-								width: 62,
-								height: 80,
-								marginBottom: 10,
-							}}
+							style={style.asWebViewErrorLogo}
 						/>
-						<Text
-							style={{
-								marginTop: 0,
-								alignSelf: 'center',
-								fontFamily: 'Chomsky',
-								fontSize: 15,
-								width: '70%',
-								textAlign: 'center',
-							}}
-						>
+						<Text style={style.asWebViewErrorText}>
 							You have no internet connection. This page has not
 							been cached. Please connect to the internet.
 						</Text>
@@ -64,27 +44,9 @@ const ArticleScreen = ({ navigation, route }) => {
 				source={{ uri: _.get(route, 'params.article_url', null) }}
 			/>
 
-			<Button
-				onPress={() => navigation.goBack()}
-				style={{
-					backgroundColor: '#fff',
-					borderColor: 'black',
-					borderWidth: 2,
-					borderRadius: 15,
-					position: 'absolute',
-					bottom: 20,
-					left: 100,
-					right: 0,
-					height: 50,
-					width: 150,
-					alignItems: 'center',
-					justifyContent: 'center',
-					elevation: 5,
-				}}
-			>
-				<Text style={{ color: 'black', fontFamily: 'Cheltenham' }}>
-					BACK
-				</Text>
+			{/* Back button on webview */}
+			<Button onPress={() => navigation.goBack()} style={style.asBack}>
+				<Text style={style.asBackText}>BACK</Text>
 			</Button>
 		</>
 	);

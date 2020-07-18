@@ -36,6 +36,7 @@ const OfflineScreen = ({
 	const offlineArticles = _.get(auth, 'offlineArticles', []);
 	const scrollYAnimatedValue = new Animated.Value(0);
 
+	/** These functions are for the header animation. */
 	const diffClamp = Animated.diffClamp(
 		scrollYAnimatedValue,
 		0,
@@ -47,22 +48,10 @@ const OfflineScreen = ({
 		outputRange: [0, isConnected ? -160 : -80],
 	});
 
-	const handleSaveUnsaveArticleHandler = (article) => {
-		const isDownloaded = offlineArticles.find((articleInfo) => {
-			return articleInfo.url === article.url;
-		});
-
-		handleSaveUnsaveArticle(
-			article,
-			deleteArticle,
-			isDownloaded,
-			offlineArticles,
-			saveArticle,
-		);
-	};
-
+	// This is the offline component
 	return (
 		<>
+			{/* This is shown when no articles are saved offline */}
 			{offlineArticles.length <= 0 && (
 				<View style={style.offlineView}>
 					<Image source={loading} style={style.offlineLogo} />
@@ -72,6 +61,9 @@ const OfflineScreen = ({
 			<ScrollView
 				contentContainerStyle={{ paddingTop: 80 }}
 				contentInsetAdjustmentBehavior="automatic"
+				/**
+				 * This event animates header
+				 */
 				onScroll={Animated.event([
 					{
 						nativeEvent: {
@@ -85,11 +77,17 @@ const OfflineScreen = ({
 					offlineArticles.map((article, index) => {
 						if (index === 0)
 							return (
+								/**
+								 * This is the First Article Component
+								 */
 								<FirstArticle
 									article={article}
 									handleSaveUnsaveArticle={() => {
-										return handleSaveUnsaveArticleHandler(
+										return handleSaveUnsaveArticle(
 											article,
+											deleteArticle,
+											offlineArticles,
+											saveArticle,
 										);
 									}}
 									navigation={navigation}
@@ -98,13 +96,19 @@ const OfflineScreen = ({
 						return null;
 					})}
 
+				{/* This is the mapping of succeeding articles */}
 				<FlatList
 					data={offlineArticles}
 					keyExtractor={(item) => item.id}
 					renderItem={({ index, item: article }) => (
 						<SucceedingArticle
 							handleSaveUnsaveArticle={() => {
-								return handleSaveUnsaveArticleHandler(article);
+								return handleSaveUnsaveArticle(
+									article,
+									deleteArticle,
+									offlineArticles,
+									saveArticle,
+								);
 							}}
 							index={index}
 							item={article}
@@ -113,6 +117,8 @@ const OfflineScreen = ({
 					)}
 				/>
 			</ScrollView>
+
+			{/* The animated header */}
 			<Animated.View
 				style={[
 					{

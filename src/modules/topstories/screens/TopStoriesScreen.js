@@ -22,14 +22,22 @@ import {
 const TopStoriesScreen = ({ navigation, openLoading }) => {
 	const [isConnected, setIsConnected] = useState(false);
 
+	/** Open state loading if component did mount */
 	useEffect(() => {
 		openLoading();
 	}, []);
 
+	/**
+	 *  A listener if the network goes offline. If the network goes offline,
+	 *  the application will only display offline articles.
+	 */
 	useEffect(() => {
 		const unsubscribe = NetInfo.addEventListener((state) => {
 			setIsConnected(state.isConnected);
 
+			/** A toaster that will pop up if the network state changes, this is for UI/UX
+			 * 	for the user to know if their network state changes
+			 */
 			if (!state.isConnected)
 				return show('You are offline. Please connect to the internet.');
 			return show('You are online.');
@@ -45,11 +53,17 @@ const TopStoriesScreen = ({ navigation, openLoading }) => {
 			}}
 		>
 			{!isConnected ? (
+				/**
+				 * The Offline Screen Component
+				 */
 				<OfflineScreen
 					isConnected={isConnected}
 					navigation={navigation}
 				/>
 			) : (
+				/**
+				 * The Online Screen Component
+				 */
 				<OnlineScreen
 					isConnected={isConnected}
 					navigation={navigation}
@@ -74,6 +88,7 @@ const mapDispatchToProps = {
 	openLoading: openLoadingAction,
 	selectSection: selectSectionAction,
 };
+
 export default utils.compose(connect(mapStateToProps, mapDispatchToProps))(
 	TopStoriesScreen,
 );

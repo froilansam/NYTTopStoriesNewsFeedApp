@@ -7,8 +7,9 @@ import moment from 'moment';
 import { Icon } from 'native-base';
 import PropTypes from 'prop-types';
 
-import layout from '~/constants/layout';
 import utils from '~/utils';
+
+import style from './FirstArticle.style';
 
 import { isArticleDownloaded } from '../topstories.library';
 
@@ -29,6 +30,10 @@ const FirstArticle = ({
 		_.get(article, 'published_date', null),
 	).fromNow();
 
+	/**
+	 * This is the card for every first article of the sections.
+	 * It is different on succeeding articles to give highlights.
+	 */
 	return (
 		<TouchableOpacity
 			onPress={() => {
@@ -37,92 +42,38 @@ const FirstArticle = ({
 				});
 			}}
 		>
-			<View style={{ backgroundColor: '#fff', elevation: 4 }}>
+			<View style={style.firstArticleView}>
 				<View>
 					<Image
 						source={{
 							uri: multimediaURL,
 						}}
-						style={{
-							width: layout.window.width,
-							height: 200,
-						}}
+						style={style.firstArticleImage}
 					/>
 				</View>
 				{!!byLine && (
 					<>
 						<View>
-							<Text
-								style={{
-									fontFamily: 'Roboto',
-									fontSize: 15,
-									marginHorizontal: 10,
-									marginTop: 10,
-								}}
-							>
+							<Text style={style.faByline}>
 								{byLine.replace('By ', '').toUpperCase()}
 							</Text>
 						</View>
 					</>
 				)}
 				<View>
-					<Text
-						style={{
-							fontFamily: 'Cheltenham',
-							fontSize: 30,
-							marginHorizontal: 10,
-							marginBottom: 10,
-						}}
-					>
-						{title}
-					</Text>
+					<Text style={style.faTitle}>{title}</Text>
 				</View>
 
 				<View>
-					<Text
-						style={{
-							fontFamily: 'Imperial',
-							fontSize: 15,
-							color: '#666666',
-							margin: 10,
-						}}
-					>
-						{abstract}
-					</Text>
+					<Text style={style.faAbstract}>{abstract}</Text>
 				</View>
-				<View
-					style={{
-						flexDirection: 'row',
-						justifyContent: 'space-between',
-						marginTop: 10,
-					}}
-				>
-					<Text
-						style={{
-							fontFamily: 'Imperial',
-							fontSize: 15,
-							color: '#666666',
-							marginHorizontal: 10,
-							marginBottom: 10,
-							alignSelf: 'flex-start',
-						}}
-					>
-						{publishedDate}
-					</Text>
-					<View
-						style={{
-							justifyContent: 'flex-end',
-							flexDirection: 'row',
-							marginBottom: 10,
-						}}
-					>
+				<View style={style.faArticleFooterView}>
+					<Text style={style.faDate}>{publishedDate}</Text>
+					<View style={style.faDownloadView}>
+						{/* This is the Download Button Component */}
 						<TouchableOpacity
 							onPress={() => {
-								handleSaveUnsaveArticle(
-									article,
-									isDownloaded,
-									offlineArticles,
-								);
+								handleSaveUnsaveArticle();
 							}}
 						>
 							<View>

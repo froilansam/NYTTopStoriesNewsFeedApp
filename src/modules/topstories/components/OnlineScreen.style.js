@@ -37,4 +37,21 @@ export default StyleSheet.create({
 		zIndex: 0,
 		width: layout.window.width,
 	},
+	onlineFilterButton: {
+		backgroundColor: '#fff',
+		borderColor: 'black',
+		borderWidth: 2,
+		borderRadius: 15,
+		height: 50,
+		width: 150,
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		elevation: 5,
+		zIndex: 100,
+	},
+	onlineFilterButtonText: {
+		color: 'black',
+		fontFamily: 'Cheltenham',
+		paddingLeft: 20,
+	},
 });

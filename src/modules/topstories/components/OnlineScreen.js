@@ -38,8 +38,7 @@ import SucceedingArticle from './SucceedingArticle';
 import {
 	handleSaveUnsaveArticle,
 	addIdToArticles,
-	getGeoInfos,
-	getDesInfo,
+	getInfo,
 } from '../topstories.library';
 
 import style from './OnlineScreen.style';
@@ -60,6 +59,8 @@ const OnlineScreen = ({
 	const [keywords, setKeywords] = useState([]);
 	const [selectedLocations, setSelectedLocations] = useState(null);
 	const [locations, setLocations] = useState([]);
+
+	// These funtions are for the component's header animation
 	const offlineArticles = _.get(auth, 'offlineArticles', []);
 	const scrollYAnimatedValue = new Animated.Value(0);
 	let renderArticles = [...articles];
@@ -75,30 +76,80 @@ const OnlineScreen = ({
 		outputRange: [0, isConnected ? -160 : -80],
 	});
 
+	// This function caches every first image on article array of images
 	const cacheImages = (articlesInfo) => {
 		return articlesInfo.reduce((acc, articleInfo) => {
-			if (_.get(articleInfo, 'multimedia[0].url'))
-				return acc.concat(
-					Image.prefetch(_.get(articleInfo, 'multimedia[0].url')),
-				);
+			const imageURL = _.get(articleInfo, 'multimedia[0].url');
+
+			if (imageURL) return acc.concat(Image.prefetch(imageURL));
 			return acc;
 		}, []);
 	};
 
+	// This function handles Filter button when pressed.
+	const handleFilterButton = (data, filterType) => {
+		// It uses actionsheet for choosing a filter.
+		return ActionSheet.show(
+			{
+				options: data
+					.map((datum) => datum.information)
+					.concat('Cancel'),
+				cancelButtonIndex: data.length,
+				title: filterType,
+			},
+			(buttonIndex) => {
+				if (buttonIndex === data.length) {
+					return filterType === 'Keywords'
+						? setSelectedKeywords(null)
+						: setSelectedLocations(null);
+				}
+
+				const selected = data.find(
+					(datum) => datum.id === buttonIndex + 1,
+				);
+
+				if (filterType === 'Keywords') {
+					setSelectedKeywords(selected.information);
+					if (selectedLocations)
+						return show(
+							`Showing article/s about ${selected.information} or ${selectedKeywords}.`,
+						);
+					return show(
+						`Showing article/s about ${selected.information}.`,
+					);
+				}
+
+				setSelectedLocations(selected.information);
+
+				if (selectedKeywords)
+					return show(
+						`Showing article/s about ${selectedLocations} or ${selected.information}.`,
+					);
+				return show(`Showing article/s about ${selected.information}.`);
+			},
+		);
+	};
+
+	// This function retrieves articles from NYTimes API and save to local state manager
 	const retrieveArticles = (type = null) => {
 		const selectedSection = _.get(auth, 'selectedSection', null);
+
+		// This action retrieves articles from NYTimes API
 		getArticles(selectedSection)
 			.then(async (data) => {
+				// Adds ID to every article
 				const articlesInfo = addIdToArticles(data);
-				const images = cacheImages(articlesInfo);
-
-				const locationsChoices = getGeoInfos(articlesInfo);
-				const keywordsChoices = getDesInfo(articlesInfo);
+				// Gets article locations and keywords
+				const locationsChoices = getInfo(articlesInfo, 'LOCATIONS');
+				const keywordsChoices = getInfo(articlesInfo, 'KEYWORDS');
 
 				setLocations(locationsChoices);
 				setKeywords(keywordsChoices);
 				setArticles(articlesInfo);
 
+				// Caches images from every article
+
+				const images = cacheImages(articlesInfo);
 				await Promise.all([...images]);
 				closeLoading();
 				if (type === 'refresh') show('Section has been refreshed.');
@@ -109,20 +160,7 @@ const OnlineScreen = ({
 			});
 	};
 
-	const handleSaveUnsaveArticleHandler = (article) => {
-		const isDownloaded = offlineArticles.find((articleInfo) => {
-			return articleInfo.url === article.url;
-		});
-
-		handleSaveUnsaveArticle(
-			article,
-			deleteArticle,
-			isDownloaded,
-			offlineArticles,
-			saveArticle,
-		);
-	};
-
+	// This function handles press event on section buttons
 	const handleSection = (section) => {
 		openLoading();
 		selectSection(section);
@@ -130,19 +168,64 @@ const OnlineScreen = ({
 		setSelectedLocations(null);
 	};
 
+	const renderFilterComponent = () => (
+		<View style={style.onlineFilterView}>
+			<Button
+				onPress={() => {
+					return handleFilterButton(keywords, 'Keywords');
+				}}
+				style={style.onlineFilterButton}
+			>
+				<Text style={style.onlineFilterButtonText}>
+					{_.truncate(selectedKeywords, {
+						length: 12,
+						ommission: '...',
+					}) || 'KEYWORDS'}
+				</Text>
+				<Icon
+					name="chevron-up"
+					style={{ color: 'black' }}
+					type="MaterialCommunityIcons"
+				/>
+			</Button>
+			<Button
+				onPress={() => {
+					return handleFilterButton(locations, 'Locations');
+				}}
+				style={style.onlineFilterButton}
+			>
+				<Text style={style.onlineFilterButtonText}>
+					{_.truncate(selectedLocations, {
+						length: 12,
+						ommission: '...',
+					}) || 'LOCATIONS'}
+				</Text>
+				<Icon
+					name="chevron-up"
+					style={{ color: 'black' }}
+					type="MaterialCommunityIcons"
+				/>
+			</Button>
+		</View>
+	);
+
+	// Refresh even on Refresh Control
 	const refresh = () => {
 		openLoading();
 		retrieveArticles('refresh');
 	};
 
+	// This function opens state loading.
 	useEffect(() => {
 		openLoading();
 	}, []);
 
+	// This function retrieves articles when section is changed.
 	useEffect(() => {
 		retrieveArticles();
 	}, [auth.selectedSection]);
 
+	// This function filters article by what users choose on filter component
 	if (selectedLocations || selectedKeywords) {
 		renderArticles = articles.reduce((acc, art) => {
 			if (
@@ -167,6 +250,7 @@ const OnlineScreen = ({
 						},
 					},
 				])}
+				// RefreshControl: Pulldown to refresh
 				refreshControl={
 					// eslint-disable-next-line react/jsx-wrap-multilines
 					<RefreshControl
@@ -177,6 +261,7 @@ const OnlineScreen = ({
 				}
 				scrollEventThrottle={16}
 			>
+				{/* The First Article Component */}
 				{renderArticles.length > 0 &&
 					renderArticles.map((article, index) => {
 						if (index === 0)
@@ -184,7 +269,12 @@ const OnlineScreen = ({
 								<FirstArticle
 									article={article}
 									handleSaveUnsaveArticle={() => {
-										handleSaveUnsaveArticleHandler(article);
+										return handleSaveUnsaveArticle(
+											article,
+											deleteArticle,
+											offlineArticles,
+											saveArticle,
+										);
 									}}
 									navigation={navigation}
 								/>
@@ -192,13 +282,20 @@ const OnlineScreen = ({
 
 						return null;
 					})}
+
+				{/* This maps succeeding articles */}
 				<FlatList
 					data={renderArticles}
 					keyExtractor={(item) => item.id}
 					renderItem={({ index, item: article }) => (
 						<SucceedingArticle
 							handleSaveUnsaveArticle={() => {
-								handleSaveUnsaveArticleHandler(article);
+								return handleSaveUnsaveArticle(
+									article,
+									deleteArticle,
+									offlineArticles,
+									saveArticle,
+								);
 							}}
 							index={index}
 							item={article}
@@ -207,6 +304,8 @@ const OnlineScreen = ({
 					)}
 				/>
 			</ScrollView>
+
+			{/* This is the animated header */}
 			<Animated.View
 				style={[
 					{
@@ -216,9 +315,11 @@ const OnlineScreen = ({
 				]}
 			>
 				<Text style={style.onlineHeaderTitle}>The New York Times</Text>
-
 				<View style={style.onlineLineStyle} />
+
+				{/* This is the buttons section */}
 				<ScrollView horizontal>
+					{/* Mapping sections to render Section Button COmponent for each */}
 					{sections.map((section, index) => {
 						if (index % 2 === 0) {
 							return (
@@ -234,130 +335,9 @@ const OnlineScreen = ({
 					})}
 				</ScrollView>
 			</Animated.View>
-			<View style={style.onlineFilterView}>
-				<Button
-					onPress={() => {
-						ActionSheet.show(
-							{
-								options: keywords
-									.map((keyword) => keyword.desInfo)
-									.concat('Cancel'),
-								cancelButtonIndex: keywords.length,
-								title: 'Keywords',
-							},
-							(buttonIndex) => {
-								if (buttonIndex === keywords.length) {
-									return setSelectedKeywords(null);
-								}
-								const selected = keywords.find(
-									(keyword) => keyword.id === buttonIndex + 1,
-								);
 
-								setSelectedKeywords(selected.desInfo);
-								if (selectedLocations)
-									return show(
-										`Showing article/s about ${selectedLocations} or ${selected.desInfo}.`,
-									);
-								return show(
-									`Showing article/s about ${selected.desInfo}.`,
-								);
-							},
-						);
-					}}
-					style={{
-						backgroundColor: '#fff',
-						borderColor: 'black',
-						borderWidth: 2,
-						borderRadius: 15,
-
-						height: 50,
-						width: 150,
-						flexDirection: 'row',
-						justifyContent: 'space-between',
-						elevation: 5,
-						zIndex: 100,
-					}}
-				>
-					<Text
-						style={{
-							color: 'black',
-							fontFamily: 'Cheltenham',
-							paddingLeft: 20,
-						}}
-					>
-						{_.truncate(selectedKeywords, {
-							length: 12,
-							ommission: '...',
-						}) || 'KEYWORDS'}
-					</Text>
-					<Icon
-						name="chevron-up"
-						style={{ color: 'black' }}
-						type="MaterialCommunityIcons"
-					/>
-				</Button>
-				<Button
-					onPress={() => {
-						ActionSheet.show(
-							{
-								options: locations
-									.map((location) => location.geoInfo)
-									.concat('Cancel'),
-								cancelButtonIndex: locations.length,
-								title: 'Locations',
-							},
-							(buttonIndex) => {
-								if (buttonIndex === locations.length) {
-									return setSelectedLocations(null);
-								}
-								const selected = locations.find(
-									(location) =>
-										location.id === buttonIndex + 1,
-								);
-
-								setSelectedLocations(selected.geoInfo);
-
-								if (selectedKeywords)
-									return show(
-										`Showing article/s about ${selected.geoInfo} or ${selectedKeywords}.`,
-									);
-								return show(
-									`Showing article/s about ${selected.geoInfo}.`,
-								);
-							},
-						);
-					}}
-					style={{
-						backgroundColor: '#fff',
-						borderColor: 'black',
-						borderWidth: 2,
-						borderRadius: 15,
-						height: 50,
-						width: 150,
-						flexDirection: 'row',
-						justifyContent: 'space-between',
-						elevation: 5,
-					}}
-				>
-					<Text
-						style={{
-							color: 'black',
-							fontFamily: 'Cheltenham',
-							paddingLeft: 20,
-						}}
-					>
-						{_.truncate(selectedLocations, {
-							length: 12,
-							ommission: '...',
-						}) || 'LOCATIONS'}
-					</Text>
-					<Icon
-						name="chevron-up"
-						style={{ color: 'black' }}
-						type="MaterialCommunityIcons"
-					/>
-				</Button>
-			</View>
+			{/* Filter Component */}
+			{renderFilterComponent()}
 		</>
 	);
 };

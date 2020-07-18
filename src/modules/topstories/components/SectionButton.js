@@ -7,77 +7,51 @@ import PropTypes from 'prop-types';
 
 import utils from '~/utils';
 
+import style from './SectionButton.style';
+
 const SectionButton = ({ auth, bottom, handleSection, top }) => {
 	const selectedSection = _.get(auth, 'selectedSection', null);
-	const topValue = _.get(top, 'value', null);
-	const topLabel = _.get(top, 'label', null);
-	const bottomValue = _.get(bottom, 'value', null);
-	const bottomLabel = _.get(bottom, 'label', null);
 
-	return (
-		<View>
-			<TouchableOpacity onPress={() => handleSection(topValue)}>
+	// Section Button Component
+	const renderSectionButton = (data) => {
+		const dataValue = _.get(data, 'value', null);
+		const dataLabel = _.get(data, 'label', null);
+		return (
+			<TouchableOpacity onPress={() => handleSection(dataValue)}>
 				<View
-					style={{
-						borderColor: 'black',
-						borderWidth: 1,
-						paddingVertical: 5,
-						width: 130,
-						borderRadius: 10,
-						alignItems: 'center',
-						justifyContent: 'center',
-						marginTop: 10,
-						marginHorizontal: 2,
-						backgroundColor:
-							selectedSection === topValue ? 'black' : '#fff',
-					}}
+					style={[
+						{
+							backgroundColor:
+								selectedSection === dataValue
+									? 'black'
+									: '#fff',
+						},
+						style.sbView,
+					]}
 				>
 					<Text
-						style={{
-							fontFamily: 'Imperial',
-							fontSize: 17,
-							color:
-								selectedSection === topValue ? '#fff' : 'black',
-						}}
+						style={[
+							{
+								color:
+									selectedSection === dataValue
+										? '#fff'
+										: 'black',
+							},
+							style.sbText,
+						]}
 					>
-						{topLabel}
+						{dataLabel}
 					</Text>
 				</View>
 			</TouchableOpacity>
-			{!!bottomValue && (
-				<TouchableOpacity onPress={() => handleSection(bottomValue)}>
-					<View
-						style={{
-							borderColor: 'black',
-							borderWidth: 1,
-							paddingVertical: 5,
-							width: 130,
-							borderRadius: 10,
-							alignItems: 'center',
-							justifyContent: 'center',
-							marginTop: 10,
-							marginHorizontal: 2,
-							backgroundColor:
-								selectedSection === bottomValue
-									? 'black'
-									: '#fff',
-						}}
-					>
-						<Text
-							style={{
-								fontFamily: 'Imperial',
-								fontSize: 17,
-								color:
-									selectedSection === bottomValue
-										? '#fff'
-										: 'black',
-							}}
-						>
-							{bottomLabel}
-						</Text>
-					</View>
-				</TouchableOpacity>
-			)}
+		);
+	};
+
+	return (
+		<View>
+			{renderSectionButton(top)}
+			{/* // There are instances that the sections are not odd number in length so sometimes there are no bottom button */}
+			{!!bottom && renderSectionButton(bottom)}
 		</View>
 	);
 };

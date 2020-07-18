@@ -2,20 +2,29 @@ import _ from 'lodash';
 
 import { show } from '../notification/notification.library';
 
-/* eslint-disable import/prefer-default-export */
+// A function that checks if the article has been already downloaded offline.
+export const isArticleDownloaded = (offlineArticles, article) =>
+	offlineArticles.find((articleInfo) => {
+		return articleInfo.url === article.url;
+	});
+
+// This is a function for saving and unsaving articles offline.
 export const handleSaveUnsaveArticle = (
 	article,
 	deleteArticle,
-	isDownloaded,
 	offlineArticles,
 	saveArticle,
 ) => {
+	// These codes check if the article has been already downloaded but returns index.
+	const isDownloaded = isArticleDownloaded(offlineArticles, article);
+
 	if (isDownloaded) {
 		const articleIndex = offlineArticles.findIndex((articleInfo) => {
 			return articleInfo.url === article.url;
 		});
 
 		if (articleIndex >= 0) {
+			// This action deletes article from the state manager.
 			deleteArticle([
 				...offlineArticles.slice(0, articleIndex),
 				...offlineArticles.slice(articleIndex + 1),
@@ -32,6 +41,7 @@ export const handleSaveUnsaveArticle = (
 			? 1
 			: offlineArticles[offlineArticlesLength - 1].offlineID + 1;
 
+	// This action saves article to the state manager.
 	saveArticle({
 		...article,
 		offlineID,
@@ -40,11 +50,7 @@ export const handleSaveUnsaveArticle = (
 	return show('Article has been saved offline.');
 };
 
-export const isArticleDownloaded = (offlineArticles, article) =>
-	offlineArticles.find((articleInfo) => {
-		return articleInfo.url === article.url;
-	});
-
+// Since NY Times API doesn't return ID on each article, this function attaches ID on each article.
 export const addIdToArticles = (data) =>
 	data.data.results.map((art, index) => {
 		return {
@@ -53,9 +59,15 @@ export const addIdToArticles = (data) =>
 		};
 	});
 
-export const getGeoInfos = (articlesInfo) =>
+// this function gets the Location and Keywords from each article so that it will be put on filter.
+export const getInfo = (articlesInfo, type) =>
 	articlesInfo.reduce((acc, art) => {
-		const geo = _.get(art, 'geo_facet', []).sort((a, b) => {
+		const informations =
+			type === 'KEYWORDS'
+				? _.get(art, 'des_facet', [])
+				: _.get(art, 'geo_facet', []);
+
+		const info = informations.sort((a, b) => {
 			if (a < b) {
 				return -1;
 			}
@@ -66,18 +78,17 @@ export const getGeoInfos = (articlesInfo) =>
 		});
 
 		const accumulator = [...acc];
-
-		if (geo.length > 0) {
-			const geoMapped = geo.reduce(
-				(accu, geoInfo) => {
+		if (info.length > 0) {
+			const infoMapped = info.reduce(
+				(accu, information) => {
 					const included = accu.find(
-						(single) => single.geoInfo === geoInfo,
+						(single) => single.information === information,
 					);
 
 					if (!included) {
 						return accu.concat({
 							id: accu.length + 1,
-							geoInfo,
+							information,
 						});
 					}
 					return accu;
@@ -85,43 +96,7 @@ export const getGeoInfos = (articlesInfo) =>
 				[...accumulator],
 			);
 
-			return geoMapped;
-		}
-		return accumulator;
-	}, []);
-
-export const getDesInfo = (articlesInfo) =>
-	articlesInfo.reduce((acc, art) => {
-		const des = _.get(art, 'des_facet', []).sort((a, b) => {
-			if (a < b) {
-				return -1;
-			}
-			if (a > b) {
-				return 1;
-			}
-			return 0;
-		});
-
-		const accumulator = [...acc];
-		if (des.length > 0) {
-			const desMapped = des.reduce(
-				(accu, desInfo) => {
-					const included = accu.find(
-						(single) => single.desInfo === desInfo,
-					);
-
-					if (!included) {
-						return accu.concat({
-							id: accu.length + 1,
-							desInfo,
-						});
-					}
-					return accu;
-				},
-				[...accumulator],
-			);
-
-			return desMapped;
+			return infoMapped;
 		}
 		return accumulator;
 	}, []);

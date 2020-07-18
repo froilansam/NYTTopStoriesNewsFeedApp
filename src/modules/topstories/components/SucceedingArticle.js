@@ -11,6 +11,9 @@ import utils from '~/utils';
 
 import { isArticleDownloaded } from '../topstories.library';
 
+import style from './SucceedingArticle.style';
+import faStyle from './FirstArticle.style';
+
 const SucceedingArticle = ({
 	auth,
 	handleSaveUnsaveArticle,
@@ -18,6 +21,7 @@ const SucceedingArticle = ({
 	item: article,
 	navigation,
 }) => {
+	// Putting this here so that it won't render the first article again
 	if (index !== 0) {
 		const offlineArticles = _.get(auth, 'offlineArticles', []);
 		const isDownloaded = isArticleDownloaded(offlineArticles, article);
@@ -30,6 +34,7 @@ const SucceedingArticle = ({
 			_.get(article, 'published_date', null),
 		).fromNow();
 
+		// Succeeding Articles Component
 		return (
 			<TouchableOpacity
 				onPress={() => {
@@ -38,14 +43,7 @@ const SucceedingArticle = ({
 					});
 				}}
 			>
-				<View
-					style={{
-						backgroundColor: '#fff',
-						elevation: 4,
-						marginTop: 10,
-						paddingTop: 10,
-					}}
-				>
+				<View style={style.saView}>
 					<View
 						style={{
 							flexDirection: 'row',
@@ -59,14 +57,7 @@ const SucceedingArticle = ({
 						>
 							{!!byLine && (
 								<View>
-									<Text
-										style={{
-											fontFamily: 'Roboto',
-											fontSize: 13,
-											marginHorizontal: 10,
-											marginTop: 10,
-										}}
-									>
+									<Text style={style.saByline}>
 										{byLine
 											.replace('By ', '')
 											.toUpperCase()}
@@ -74,82 +65,27 @@ const SucceedingArticle = ({
 								</View>
 							)}
 							<View>
-								<Text
-									style={{
-										fontFamily: 'Cheltenham',
-										fontSize: 25,
-										marginHorizontal: 10,
-										marginBottom: 5,
-									}}
-								>
-									{title}
-								</Text>
+								<Text style={style.saTitle}>{title}</Text>
 							</View>
 							<View>
-								<Text
-									style={{
-										fontFamily: 'Imperial',
-										fontSize: 15,
-										color: '#666666',
-										marginHorizontal: 10,
-										marginTop: 5,
-									}}
-								>
-									{abstract}
-								</Text>
+								<Text style={style.saAbstract}>{abstract}</Text>
 							</View>
 						</View>
-						<View
-							style={{
-								flexDirection: 'column',
-								width: '30%',
-								padding: 10,
-							}}
-						>
+						<View style={style.saImageView}>
 							<Image
 								source={{
 									uri: multimediaURL,
 								}}
-								style={{
-									width: 80,
-									height: 80,
-								}}
+								style={style.saImage}
 							/>
 						</View>
 					</View>
-					<View
-						style={{
-							flexDirection: 'row',
-							justifyContent: 'space-between',
-							marginTop: 10,
-						}}
-					>
-						<Text
-							style={{
-								fontFamily: 'Imperial',
-								fontSize: 15,
-								color: '#666666',
-								marginHorizontal: 10,
-								marginBottom: 10,
-								alignSelf: 'flex-start',
-							}}
-						>
-							{publishedDate}
-						</Text>
-						<View
-							style={{
-								justifyContent: 'flex-end',
-								flexDirection: 'row',
-								marginBottom: 10,
-							}}
-						>
+					<View style={faStyle.faArticleFooterView}>
+						<Text style={faStyle.faDate}>{publishedDate}</Text>
+						<View style={faStyle.faDownloadView}>
 							<TouchableOpacity
 								onPress={() => {
-									handleSaveUnsaveArticle(
-										article,
-										isDownloaded,
-										offlineArticles,
-									);
+									handleSaveUnsaveArticle();
 								}}
 							>
 								<View>
