@@ -1,3 +1,7 @@
+/**
+ * This is a library for notifications and error handling.
+ */
+
 import { Alert } from 'react-native';
 
 import HTTPStatus from 'http-status';
@@ -64,22 +68,54 @@ export function parseError(error) {
 	return 'An unknown error has occured. Please contact our tech support team.';
 }
 
+/**
+ * showing error
+ * @param {string} message
+ * @param {string} title
+ * @param {Object} options
+ */
 export function showError(message, title, options) {
 	show(parseError(message), ERROR, options);
 }
 
+/**
+ * Showing warning
+ * @param {string} message
+ * @param {string} title
+ * @param {Object} options
+ */
 export function showWarning(message, title, options) {
 	show(message, WARNING, options);
 }
 
+/**
+ *
+ * @param {*} message
+ * @param {*} title
+ * @param {*} options
+ */
 export function showInfo(message, title, options) {
 	show(message, INFO, options);
 }
 
+/**
+ *
+ * @param {*} message
+ * @param {*} title
+ */
 export function showAlert(message, title) {
 	Alert.alert(title, message);
 }
 
+/**
+ * Function for confirmation alert
+ * @param {string} message
+ * @param {string} title
+ * @param {function} confirmCallback
+ * @param {function} cancelCallback
+ * @param {string} confirmText
+ * @param {string} cancelText
+ */
 export function showConfirmation(
 	message,
 	title,
@@ -100,6 +136,11 @@ export function showConfirmation(
 	]);
 }
 
+/**
+ * Function for error handler
+ * @param {function} logout
+ * @param {object} err
+ */
 export function defaultErrorHandler(logout, err) {
 	if (err.message === 'Network Error') {
 		return showAlert(

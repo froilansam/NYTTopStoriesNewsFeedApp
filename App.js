@@ -11,6 +11,9 @@ import Main from './src/Main';
 const { persistor, store } = configureStore(initialState);
 
 const App = () => (
+	// Wrapping Main.js with redux for State Management
+	// If you yarn install and using VSCode, you can press ctrl + click on components so
+	// it will redirect you to the file.
 	<Provider store={store}>
 		<PersistGate persistor={persistor}>
 			<Root>

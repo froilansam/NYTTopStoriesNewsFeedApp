@@ -7,11 +7,11 @@ import { connect } from 'react-redux';
 import { View, Spinner } from 'native-base';
 import PropTypes from 'prop-types';
 
-import layout from '~/constants/layout';
 import utils from '~/utils';
 
 import ArticleScreen from '~/modules/topstories/screens/ArticleScreen';
 import TopStoriesScreen from '~/modules/topstories/screens/TopStoriesScreen';
+import style from './RootNavigator.style';
 
 const loading = require('~/assets/images/loading.png');
 
@@ -21,6 +21,7 @@ function RootNavigator({ auth }) {
 	return (
 		<>
 			<Root.Navigator mode="modal">
+				{/* Stack Navigator for Top Stories Screen */}
 				<Root.Screen
 					component={TopStoriesScreen}
 					name="TOP_STORIES_SCREEN"
@@ -28,6 +29,7 @@ function RootNavigator({ auth }) {
 						headerShown: false,
 					}}
 				/>
+				{/* Stack Navigator for Article Screen */}
 				<Root.Screen
 					component={ArticleScreen}
 					name="ARTICLE_SCREEN"
@@ -36,34 +38,12 @@ function RootNavigator({ auth }) {
 					}}
 				/>
 			</Root.Navigator>
+
+			{/* This the loading component on the top of the navigator */}
 			{auth.isLoading && (
 				<>
-					<View
-						style={{
-							position: 'absolute',
-							top: 0,
-							left: 0,
-							right: 0,
-							width: layout.window.width,
-							height: layout.window.height,
-							alignItems: 'center',
-							justifyContent: 'center',
-							backgroundColor: 'black',
-							opacity: 0.3,
-						}}
-					/>
-					<View
-						style={{
-							position: 'absolute',
-							top: 0,
-							left: 0,
-							right: 0,
-							width: layout.window.width,
-							height: layout.window.height,
-							alignItems: 'center',
-							justifyContent: 'center',
-						}}
-					>
+					<View style={style.loadingView} />
+					<View style={style.loadingLogoView}>
 						<Image
 							source={loading}
 							style={{ width: 62, height: 80 }}

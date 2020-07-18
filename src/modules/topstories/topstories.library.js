@@ -2,13 +2,23 @@ import _ from 'lodash';
 
 import { show } from '../notification/notification.library';
 
-// A function that checks if the article has been already downloaded offline.
+/**
+ * A function that checks if the article has been already downloaded offline.
+ * @param {Object[]} offlineArticles - Array of Articles that are saved offline.
+ * @param {Object} article - Object of Article from NY Times API
+ */
 export const isArticleDownloaded = (offlineArticles, article) =>
 	offlineArticles.find((articleInfo) => {
 		return articleInfo.url === article.url;
 	});
 
-// This is a function for saving and unsaving articles offline.
+/**
+ * This is a function for saving and unsaving articles offline.
+ * @param {Object} article - Object of article that is going to be saved.
+ * @param {function} deleteArticle - Function that deletes article from offline articles.
+ * @param {Object[]} offlineArticles - Array of articles that are saved offline.
+ * @param {function} saveArticle - Function that saves article to offline articles.
+ */
 export const handleSaveUnsaveArticle = (
 	article,
 	deleteArticle,
@@ -50,7 +60,10 @@ export const handleSaveUnsaveArticle = (
 	return show('Article has been saved offline.');
 };
 
-// Since NY Times API doesn't return ID on each article, this function attaches ID on each article.
+/**
+ * Since NY Times API doesn't return ID on each article, this function attaches ID on each article.
+ * @param {Object[]} data - Array of Articles
+ */
 export const addIdToArticles = (data) =>
 	data.data.results.map((art, index) => {
 		return {
@@ -59,7 +72,11 @@ export const addIdToArticles = (data) =>
 		};
 	});
 
-// this function gets the Location and Keywords from each article so that it will be put on filter.
+/**
+ * this function gets the Location and Keywords from each article so that it will be put on filter.
+ * @param {Object[]} articlesInfo - Array of Articles
+ * @param {string} type - Type of Information you would like to get [KEYWORDS, LOCATIONS]
+ */
 export const getInfo = (articlesInfo, type) =>
 	articlesInfo.reduce((acc, art) => {
 		const informations =

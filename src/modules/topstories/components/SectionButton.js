@@ -12,7 +12,10 @@ import style from './SectionButton.style';
 const SectionButton = ({ auth, bottom, handleSection, top }) => {
 	const selectedSection = _.get(auth, 'selectedSection', null);
 
-	// Section Button Component
+	/**
+	 * Section Button Component
+	 * @param {Object} data - Object of articles
+	 */
 	const renderSectionButton = (data) => {
 		const dataValue = _.get(data, 'value', null);
 		const dataLabel = _.get(data, 'label', null);

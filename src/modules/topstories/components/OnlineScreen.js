@@ -86,7 +86,11 @@ const OnlineScreen = ({
 		}, []);
 	};
 
-	// This function handles Filter button when pressed.
+	/**
+	 * This function handles Filter button when pressed.
+	 * @param {Object[]} data - Array of Keywords of Locations
+	 * @param {string} filterType - String of filter type [Keywords or Locations]
+	 */
 	const handleFilterButton = (data, filterType) => {
 		// It uses actionsheet for choosing a filter.
 		return ActionSheet.show(

@@ -75,6 +75,7 @@ function Main(props) {
 			<View style={styles.container}>
 				{Platform.OS === 'ios' && <StatusBar barStyle="default" />}
 				<StatusBar />
+
 				<NavigationContainer
 					ref={containerRef}
 					initialState={initialNavigationState}
