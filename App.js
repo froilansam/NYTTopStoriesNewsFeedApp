@@ -14,7 +14,11 @@ const App = () => (
 	// Wrapping Main.js with redux for State Management
 	// If you yarn install and using VSCode, you can press ctrl + click on components so
 	// it will redirect you to the file.
+
 	<Provider store={store}>
+		{/* // This delays the rendering of your app's UI until your persisted
+	// state has been retrieved and saved to redux. NOTE the PersistGate
+	// loading prop can be null, or any react instance */}
 		<PersistGate persistor={persistor}>
 			<Root>
 				<Main />

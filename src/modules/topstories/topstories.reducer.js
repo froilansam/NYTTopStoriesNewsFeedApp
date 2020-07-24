@@ -4,6 +4,7 @@ import {
 	SELECT_SECTION,
 	SAVE_ARTICLE,
 	DELETE_ARTICLE,
+	OPENED_ARTICLE,
 } from '~/constants/actions';
 import initialState from '~/store/initialState';
 
@@ -37,6 +38,12 @@ export default (state = initialState.auth, action = null) => {
 			return {
 				...state,
 				offlineArticles: action.data,
+			};
+
+		case OPENED_ARTICLE:
+			return {
+				...state,
+				openedArticle: state.openedArticle.push(action.data),
 			};
 
 		default:

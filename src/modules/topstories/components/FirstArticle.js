@@ -12,14 +12,17 @@ import utils from '~/utils';
 import style from './FirstArticle.style';
 
 import { isArticleDownloaded } from '../topstories.library';
+import { openedArticle as openedArticleActions } from '../topstories.action';
 
 const FirstArticle = ({
 	article,
 	auth,
 	handleSaveUnsaveArticle,
 	navigation,
+	openedArticle,
 }) => {
 	const offlineArticles = _.get(auth, 'offlineArticles', []);
+	const openedArticles = _.get(auth, 'openedArticles', []);
 	const isDownloaded = isArticleDownloaded(offlineArticles, article);
 	const articleURL = _.get(article, 'url', null);
 	const multimediaURL = _.get(article, 'multimedia[0].url', null);
@@ -37,6 +40,7 @@ const FirstArticle = ({
 	return (
 		<TouchableOpacity
 			onPress={() => {
+				openedArticle(articleURL);
 				return navigation.navigate('ARTICLE_SCREEN', {
 					article_url: articleURL,
 				});
@@ -86,6 +90,15 @@ const FirstArticle = ({
 								/>
 							</View>
 						</TouchableOpacity>
+						{openedArticles.includes(articleURL) && (
+							<View>
+								<Icon
+									name="heart"
+									style={{ marginHorizontal: 20 }}
+									type="Ionicons"
+								/>
+							</View>
+						)}
 					</View>
 				</View>
 			</View>
@@ -98,8 +111,15 @@ FirstArticle.propTypes = {
 	auth: PropTypes.shape().isRequired,
 	handleSaveUnsaveArticle: PropTypes.func.isRequired,
 	navigation: PropTypes.shape().isRequired,
+	openedArticle: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = ({ auth }) => ({ auth });
 
-export default utils.compose(connect(mapStateToProps))(FirstArticle);
+const mapDispatchToProps = {
+	openedArticle: openedArticleActions,
+};
+
+export default utils.compose(connect(mapStateToProps, mapDispatchToProps))(
+	FirstArticle,
+);

@@ -7,6 +7,7 @@ import {
 	SELECT_SECTION,
 	SAVE_ARTICLE,
 	DELETE_ARTICLE,
+	OPENED_ARTICLE,
 } from '~/constants/actions';
 
 // An action that gets article from the NYTimes API
@@ -59,6 +60,15 @@ export function deleteArticle(articles) {
 		dispatch({
 			type: DELETE_ARTICLE,
 			data: articles,
+		});
+	};
+}
+
+export function openedArticle(articleURL) {
+	return (dispatch) => {
+		dispatch({
+			type: OPENED_ARTICLE,
+			data: articleURL,
 		});
 	};
 }
