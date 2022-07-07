@@ -33,7 +33,7 @@
 		"formik": "^2.1.4",
 		"http-status": "^1.4.2",
 		"lodash": "^4.17.15",
-		"moment": "^2.27.0",
+		"moment": "^2.29.4",
 		"native-base": "^2.13.12",
 		"prop-types": "^15.7.2",
 		"react": "~16.9.0",
